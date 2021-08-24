@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .main{
+        background-color: rgb(243, 147, 83);
+        position: absolute;
+        width: 100%;
+        min-height: 100%;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        margin: 0;
+        padding: 0;
+    }
+    .page{
+        position: absolute;
+        border-radius: 20px;
+        margin: 100px;
+        min-width: 300px;
+        min-height: 90%;
+        background-color: rgb(36, 40, 51);
+        align-items: center;
+        display: flex;
+        flex-flow: column;
+        padding: 0;
+        margin: 0;
+    }
+    .search{
+        width: 210px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        padding: 0px;
+    }
+    .item{
+        width: 210px;
+        height: 30px;
+        margin-top: 20px;
+        background-color: aliceblue;
+        border-radius: 30px;
+        line-height: 30px;
+        font-size: 20px;
+        
+    }
+    .del{
+        border-radius: 100%;
+        float: right;
+        background-color: red;
+        height: 20px;
+        width: 20px;
+        margin-top: 5px;
+        margin-right: 10px;
+    }
+    
+</style>
+<body>
+    <div class="main">
+        <div class="page">
+            <h1 style="color: aliceblue;">Todos</h1>
+            <div class="search">
+                <input id="message" style="border-radius: 30px 0px 0 30px;height: 30px; width: 85%; border: none; outline: none;">
+                <input id="btn" onclick="add()" type="button" value="确认" style="border-radius: 0 30px 30px 0; height: 33px;width: 15%;margin: 0; float: right; "></input>
+            </div>
+            <img onclick="clean()" src="clear.png" width="15px" style="margin-left: 150px;margin-top: 10px; cursor: pointer;">
+            <ul style="margin: 0; padding: 0;" id="ul">
+                <!-- <div class="item">123 <input type="button" class="del" ></input></div> -->
+            </ul>
+        </div>
+    </div>
+    <script>
+        var dels=document.getElementsByClassName("del");
+        var ul=document.getElementById("ul");
+        function add(){
+            var news=document.getElementById("message").value;
+            if(news==""){
+                alert('内容为空');
+                return false;
+            }else{
+                // var div=document.createElement("div");
+                // div.className='item';
+                // div.innerHTML=news+'<input type="button" class="del" ></input>';
+                // ul.insertBefore(div,ul.children[0]);
+                // div.children[0].setAttribute('onclick',"del()");
+                // div.children[0].addEventListener("click",del);
+                var xhttp= new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                    if(this.readyState==4&&this.status==200){
+                        findAll();
+                    }
+                }
+                xhttp.open("POST","http://47.113.187.45:8989/todo/index/create",true);
+                xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+                xhttp.send("msg="+news);
+            }
+        }
+        // for(var i=0;i<dels.length;i++){
+        //     dels[i].onclick=function(){  
+        //         ul.removeChild(this.parentNode);
+        //     }
+        // }
+        function del(){
+            ul.removeChild(this.parentNode);
+            var xhttp= new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                    if(this.readyState==4&&this.status==200){
+                        findAll();
+                        
+                    }
+                }
+                xhttp.open("DELETE","http://47.113.187.45:8989/todo/index/delete/"+this.parentNode.id,true);
+                xhttp.send();
+        }
+        function findAll(){
+            ul.innerHTML='';
+            var xhttp= new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                    if(this.readyState==4&&this.status==200){
+                        var data=JSON.parse(this.responseText);
+                        var txt="";
+                        for(var i=0;i<data.content.length;i++){
+                            var div=document.createElement("div");
+                            div.className='item';
+                            div.id=data.content[i].Id;
+                            div.innerHTML=data.content[i].Content+'<input type="button" class="del" ></input>';
+                            ul.insertBefore(div,ul.children[0]);
+                            div.children[0].setAttribute('onclick',"del()");
+                            div.children[0].addEventListener("click",del);                          
+                        }                      
+                    }
+                }
+                xhttp.open("Get","http://47.113.187.45:8989/todo/index/selectAll",true);
+                xhttp.send();
+        }
+        function clean(){
+            ul.innerHTML='';
+            var xhttp= new XMLHttpRequest();
+                xhttp.onreadystatechange=function(){
+                    if(this.readyState==4&&this.status==200){
+                        findAll();
+                    }
+                }
+                xhttp.open("DELETE","http://47.113.187.45:8989/todo/index/deleteAll",true);
+                xhttp.send();
+        }
+        window.onload=findAll();
+    </script>
+</body>
+</html>
